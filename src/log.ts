@@ -37,6 +37,11 @@ export class Log {
 		this.log(msg, 'ERROR');
 	}
 
+	dispose(): void {
+		this.targets.map(target => target.dispose());
+		this.targets = [];
+	}
+
 	private log(msg: string, logLevel: string) {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
