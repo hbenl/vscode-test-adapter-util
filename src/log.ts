@@ -38,20 +38,20 @@ export class Log {
 	}
 
 	dispose(): void {
-		this.targets.map(target => target.dispose());
+		this.targets.forEach(target => target.dispose());
 		this.targets = [];
 	}
 
 	private log(msg: string, logLevel: string) {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
-			this.targets.map(target => target.write(`[${dateString}] [${logLevel}] ${msg}`));
+			this.targets.forEach(target => target.write(`[${dateString}] [${logLevel}] ${msg}`));
 		}
 	}
 
 	private configure() {
 
-		this.targets.map(target => target.dispose());
+		this.targets.forEach(target => target.dispose());
 		this.targets = [];
 
 		const uri = this.workspaceFolder ? this.workspaceFolder.uri : undefined;
