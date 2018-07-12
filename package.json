@@ -22,7 +22,8 @@
     "vscode": "^1.24.0"
   },
   "dependencies": {
-    "tslib": "^1.9.3"
+    "tslib": "^1.9.3",
+    "vscode-test-adapter-api": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^8.10.20",
