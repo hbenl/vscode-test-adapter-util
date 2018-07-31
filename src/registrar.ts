@@ -34,6 +34,11 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 
 	add(workspaceFolder: vscode.WorkspaceFolder) {
 
+		if (workspaceFolder.uri.scheme !== 'file') {
+			if (this.log.enabled) this.log.info(`Ignoring WorkspaceFolder with URI ${workspaceFolder.uri.toString()}`);
+			return;
+		}
+	
 		if (this.log.enabled) this.log.info(`Creating adapter for ${workspaceFolder.uri.fsPath}`);
 
 		const adapter = this.adapterFactory(workspaceFolder);
