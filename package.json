@@ -1,6 +1,6 @@
 {
   "name": "vscode-test-adapter-util",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A collection of utility functions for use in test adapters for the VS Code test explorer",
   "author": "Holger Benl <hbenl@evandor.de>",
   "license": "MIT",
