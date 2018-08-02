@@ -4,12 +4,12 @@ import { exec } from 'child_process';
 export async function detectNodePath(): Promise<string | undefined> {
 	try {
 		if (os.platform() === 'win32') {
-			return (await execPromise("where node")).trim();
+			return (await execPromise('where node')).trim().split('\r\n')[0];
 		} else {
-			return (await execPromise("which node")).trim();
+			return (await execPromise('which node')).trim();
 		}
 	} catch (e) {
-		return;
+		return undefined;
 	}
 }
 
