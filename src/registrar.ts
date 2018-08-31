@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TestAdapter, TestExplorerExtension } from 'vscode-test-adapter-api';
+import { TestAdapter, TestHub } from 'vscode-test-adapter-api';
 import { Log } from './log';
 
 export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void }> {
@@ -7,7 +7,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 	private readonly registeredAdapters = new Map<vscode.WorkspaceFolder, T>();
 
 	constructor(
-		private readonly testExplorer: TestExplorerExtension,
+		private readonly testHub: TestHub,
 		private readonly adapterFactory: (workspaceFolder: vscode.WorkspaceFolder) => T,
 		private readonly log: Log
 	) {
@@ -46,7 +46,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 
 		if (this.log.enabled) this.log.info(`Registering adapter for ${workspaceFolder.uri.fsPath}`);
 
-		this.testExplorer.registerAdapter(adapter);
+		this.testHub.registerTestAdapter(adapter);
 	}
 
 	remove(workspaceFolder: vscode.WorkspaceFolder) {
@@ -56,7 +56,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 
 			if (this.log.enabled) this.log.info(`Removing adapter for ${workspaceFolder.uri.fsPath}`);
 
-			this.testExplorer.unregisterAdapter(adapter);
+			this.testHub.unregisterTestAdapter(adapter);
 			this.registeredAdapters.delete(workspaceFolder);
 			adapter.dispose();
 		}

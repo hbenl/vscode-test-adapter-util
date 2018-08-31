@@ -23,11 +23,11 @@
   },
   "dependencies": {
     "tslib": "^1.9.3",
-    "vscode-test-adapter-api": "^0.4.0"
+    "vscode-test-adapter-api": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^8.10.20",
-    "typescript": "^2.9.2",
-    "vscode": "^1.1.18"
+    "typescript": "^3.0.3",
+    "vscode": "^1.1.21"
   }
 }
