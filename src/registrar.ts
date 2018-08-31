@@ -9,7 +9,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 	constructor(
 		private readonly testHub: TestHub,
 		private readonly adapterFactory: (workspaceFolder: vscode.WorkspaceFolder) => T,
-		private readonly log: Log
+		private readonly log?: Log
 	) {
 
 		if (vscode.workspace.workspaceFolders) {
@@ -18,7 +18,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 			}
 		}
 
-		log.info('Initialization finished');
+		if (this.log) this.log.info('Initialization finished');
 
 		vscode.workspace.onDidChangeWorkspaceFolders((event) => {
 
@@ -35,16 +35,16 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 	add(workspaceFolder: vscode.WorkspaceFolder) {
 
 		if (workspaceFolder.uri.scheme !== 'file') {
-			if (this.log.enabled) this.log.info(`Ignoring WorkspaceFolder with URI ${workspaceFolder.uri.toString()}`);
+			if (this.log && this.log.enabled) this.log.info(`Ignoring WorkspaceFolder with URI ${workspaceFolder.uri.toString()}`);
 			return;
 		}
 	
-		if (this.log.enabled) this.log.info(`Creating adapter for ${workspaceFolder.uri.fsPath}`);
+		if (this.log && this.log.enabled) this.log.info(`Creating adapter for ${workspaceFolder.uri.fsPath}`);
 
 		const adapter = this.adapterFactory(workspaceFolder);
 		this.registeredAdapters.set(workspaceFolder, adapter);
 
-		if (this.log.enabled) this.log.info(`Registering adapter for ${workspaceFolder.uri.fsPath}`);
+		if (this.log && this.log.enabled) this.log.info(`Registering adapter for ${workspaceFolder.uri.fsPath}`);
 
 		this.testHub.registerTestAdapter(adapter);
 	}
@@ -54,7 +54,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		const adapter = this.registeredAdapters.get(workspaceFolder);
 		if (adapter) {
 
-			if (this.log.enabled) this.log.info(`Removing adapter for ${workspaceFolder.uri.fsPath}`);
+			if (this.log && this.log.enabled) this.log.info(`Removing adapter for ${workspaceFolder.uri.fsPath}`);
 
 			this.testHub.unregisterTestAdapter(adapter);
 			this.registeredAdapters.delete(workspaceFolder);
@@ -66,6 +66,6 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		for (const workspaceFolder of this.registeredAdapters.keys()) {
 			this.remove(workspaceFolder);
 		}
-		this.log.dispose();
+		if (this.log) this.log.dispose();
 	}
 }
