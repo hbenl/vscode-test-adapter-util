@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
  */
 export class Log {
 
+	private configChangeSubscription: vscode.Disposable | undefined;
 	private targets: ILogTarget[] = [];
 
 	/**
@@ -20,7 +21,7 @@ export class Log {
 		private readonly outputChannelName: string
 	) {
 		this.configure();
-		vscode.workspace.onDidChangeConfiguration(event => {
+		this.configChangeSubscription = vscode.workspace.onDidChangeConfiguration(event => {
 			if (event.affectsConfiguration(this.configSection + '.logpanel') || 
 				event.affectsConfiguration(this.configSection + '.logfile')) {
 				this.configure();
@@ -47,6 +48,10 @@ export class Log {
 	}
 
 	dispose(): void {
+		if (this.configChangeSubscription) {
+			this.configChangeSubscription.dispose();
+			this.configChangeSubscription = undefined;
+		}
 		this.targets.forEach(target => target.dispose());
 		this.targets = [];
 	}

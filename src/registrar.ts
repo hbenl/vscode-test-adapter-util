@@ -4,6 +4,7 @@ import { Log } from './log';
 
 export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void }> {
 
+	private folderChangeSubscription: vscode.Disposable | undefined;
 	private readonly registeredAdapters = new Map<vscode.WorkspaceFolder, T>();
 
 	/**
@@ -16,7 +17,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 	constructor(
 		private readonly testHub: TestHub,
 		private readonly adapterFactory: (workspaceFolder: vscode.WorkspaceFolder) => T,
-		private readonly log?: Log
+		private log?: Log
 	) {
 
 		if (vscode.workspace.workspaceFolders) {
@@ -27,7 +28,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 
 		if (this.log) this.log.info('Initialization finished');
 
-		vscode.workspace.onDidChangeWorkspaceFolders((event) => {
+		this.folderChangeSubscription = vscode.workspace.onDidChangeWorkspaceFolders((event) => {
 
 			for (const workspaceFolder of event.removed) {
 				this.remove(workspaceFolder);
@@ -73,6 +74,12 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		for (const workspaceFolder of this.registeredAdapters.keys()) {
 			this.remove(workspaceFolder);
 		}
-		if (this.log) this.log.dispose();
+		if (this.folderChangeSubscription) {
+			this.folderChangeSubscription.dispose();
+			this.folderChangeSubscription = undefined;
+		}
+		if (this.log) {
+			this.log = undefined;
+		}
 	}
 }
