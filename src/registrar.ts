@@ -6,6 +6,13 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 
 	private readonly registeredAdapters = new Map<vscode.WorkspaceFolder, T>();
 
+	/**
+	 * This will create and register a TestAdapter for every WorkspaceFolder
+	 * and unregister and dispose it when the WorkspaceFolder is closed.
+	 * @param testHub - the TestHub that is exported by the Test Explorer extension
+	 * @param adapterFactory - factory method for creating a disposable Test Adapter
+	 * @param log - logger (optional)
+	 */
 	constructor(
 		private readonly testHub: TestHub,
 		private readonly adapterFactory: (workspaceFolder: vscode.WorkspaceFolder) => T,

@@ -1,13 +1,22 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 
+/**
+ * A simple logger for VS Code extensions that can log to a VS Code output channel or a file
+ */
 export class Log {
 
 	private targets: ILogTarget[] = [];
 
+	/**
+	 * Create a simple logger for VS Code extensions that can log to a VS Code output channel or a file
+	 * @param configSection - the prefix for the configuration variables: logging to the output channel will be enabled if <configSection>.logpanel is set to true, logging to a file will be enabled if <configSection>.logfile is set to a filename
+	 * @param workspaceFolder - the WorkspaceFolder (optional)
+	 * @param outputChannelName - the name of the output channel
+	 */
 	constructor(
 		private readonly configSection: string,
-		private readonly workspaceFolder: vscode.WorkspaceFolder,
+		private readonly workspaceFolder: vscode.WorkspaceFolder | undefined,
 		private readonly outputChannelName: string
 	) {
 		this.configure();
