@@ -40,7 +40,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		});
 	}
 
-	add(workspaceFolder: vscode.WorkspaceFolder) {
+	private add(workspaceFolder: vscode.WorkspaceFolder) {
 
 		if (workspaceFolder.uri.scheme !== 'file') {
 			if (this.log && this.log.enabled) this.log.info(`Ignoring WorkspaceFolder with URI ${workspaceFolder.uri.toString()}`);
@@ -57,7 +57,7 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		this.testHub.registerTestAdapter(adapter);
 	}
 
-	remove(workspaceFolder: vscode.WorkspaceFolder) {
+	private remove(workspaceFolder: vscode.WorkspaceFolder) {
 
 		const adapter = this.registeredAdapters.get(workspaceFolder);
 		if (adapter) {
