@@ -68,7 +68,7 @@ export class Log {
 		this.targets.forEach(target => target.dispose());
 		this.targets = [];
 
-		const uri = this.workspaceFolder ? this.workspaceFolder.uri : undefined;
+		const uri = this.workspaceFolder ? this.workspaceFolder.uri : null;
 		const configuration = vscode.workspace.getConfiguration(this.configSection, uri);
 
 		if (configuration.get<boolean>('logpanel')) {
