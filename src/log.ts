@@ -70,9 +70,14 @@ export class Log {
 	private log(logLevel: string, ...msg: any[]) {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
-			let msgWithInspection: string = '';
+
+			const inspectOptions = this.nextInspectOptions !== undefined
+				? this.nextInspectOptions
+				: this.inspectOptions;
+
+			let msgWithInspection = '';
 			let isPreviousNotString = false;
-			const inspectOptions = this.nextInspectOptions !== undefined ? this.nextInspectOptions : this.inspectOptions;
+
 			for (let i = 0; i < msg.length; ++i) {
 				if (typeof msg[i] === 'string') {
 					msgWithInspection += msg[i];
@@ -82,12 +87,14 @@ export class Log {
 					try {
 						msgWithInspection += util.inspect(msg[i], inspectOptions);
 					} catch (e) {
-						msgWithInspection += '<inspection error>'
+						msgWithInspection += '<inspection error>';
 					}
 					isPreviousNotString = true;
 				}
 			}
-			this.targets.forEach(target => target.write(`[${dateString}] [${logLevel}] ${msgWithInspection}`));
+
+			const final = `[${dateString}] [${logLevel}] ${msgWithInspection}`;
+			this.targets.forEach(target => target.write(final));
 		}
 		this.nextInspectOptions = undefined;
 	}
