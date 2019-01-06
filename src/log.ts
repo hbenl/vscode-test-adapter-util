@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
+import * as util from 'util';
 
 /**
  * A simple logger for VS Code extensions that can log to a VS Code output channel or a file
@@ -8,6 +9,7 @@ export class Log {
 
 	private configChangeSubscription: vscode.Disposable | undefined;
 	private targets: ILogTarget[] = [];
+	private nextInspectOptions: InspectOptions | undefined = undefined;
 
 	/**
 	 * Create a simple logger for VS Code extensions that can log to a VS Code output channel or a file
@@ -18,11 +20,12 @@ export class Log {
 	constructor(
 		private readonly configSection: string,
 		private readonly workspaceFolder: vscode.WorkspaceFolder | undefined,
-		private readonly outputChannelName: string
+		private readonly outputChannelName: string,
+		private inspectOptions: InspectOptions = {}
 	) {
 		this.configure();
 		this.configChangeSubscription = vscode.workspace.onDidChangeConfiguration(event => {
-			if (event.affectsConfiguration(this.configSection + '.logpanel') || 
+			if (event.affectsConfiguration(this.configSection + '.logpanel') ||
 				event.affectsConfiguration(this.configSection + '.logfile')) {
 				this.configure();
 			}
@@ -31,20 +34,28 @@ export class Log {
 
 	get enabled() { return (this.targets.length > 0); }
 
-	debug(msg: string): void {
-		this.log(msg, 'DEBUG');
+	setDefaultInspectOptions(inspectOptions: InspectOptions) {
+		this.inspectOptions = inspectOptions;
 	}
 
-	info(msg: string): void {
-		this.log(msg, 'INFO');
+	setNextInspectOptions(inspectOptions: InspectOptions) {
+		this.nextInspectOptions = inspectOptions;
 	}
 
-	warn(msg: string): void {
-		this.log(msg, 'WARN');
+	debug(...msg: any[]): void {
+		this.log('DEBUG', msg);
 	}
 
-	error(msg: string): void {
-		this.log(msg, 'ERROR');
+	info(...msg: any[]): void {
+		this.log('INFO', msg);
+	}
+
+	warn(...msg: any[]): void {
+		this.log('WARN', msg);
+	}
+
+	error(...msg: any[]): void {
+		this.log('ERROR', msg);
 	}
 
 	dispose(): void {
@@ -56,11 +67,36 @@ export class Log {
 		this.targets = [];
 	}
 
-	private log(msg: string, logLevel: string) {
+	private log(logLevel: string, ...msg: any[]) {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
-			this.targets.forEach(target => target.write(`[${dateString}] [${logLevel}] ${msg}`));
+
+			const inspectOptions = this.nextInspectOptions !== undefined
+				? this.nextInspectOptions
+				: this.inspectOptions;
+
+			let msgWithInspection = '';
+			let isPreviousNotString = false;
+
+			for (let i = 0; i < msg.length; ++i) {
+				if (typeof msg[i] === 'string') {
+					msgWithInspection += msg[i];
+					isPreviousNotString = false;
+				} else {
+					if (isPreviousNotString) msgWithInspection += '; ';
+					try {
+						msgWithInspection += util.inspect(msg[i], inspectOptions);
+					} catch (e) {
+						msgWithInspection += '<inspection error>';
+					}
+					isPreviousNotString = true;
+				}
+			}
+
+			const final = `[${dateString}] [${logLevel}] ${msgWithInspection}`;
+			this.targets.forEach(target => target.write(final));
 		}
+		this.nextInspectOptions = undefined;
 	}
 
 	private configure() {
@@ -155,3 +191,5 @@ export class FileTarget implements ILogTarget {
 		});
 	}
 }
+
+export interface InspectOptions extends util.InspectOptions { }
