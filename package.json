@@ -9,7 +9,7 @@
     "url": "https://github.com/hbenl/vscode-test-adapter-util.git"
   },
   "scripts": {
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "install-vscode-typings": "node ./node_modules/vscode/bin/install",
     "compile": "tsc"
   },
   "files": [
