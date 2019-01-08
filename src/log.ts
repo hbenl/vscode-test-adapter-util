@@ -38,8 +38,19 @@ export class Log {
 		this.inspectOptions = inspectOptions;
 	}
 
+	updateDefaultInspectOptions(inspectOptions: InspectOptions) {
+		Object.assign(this.inspectOptions, inspectOptions);
+	}
+
 	setNextInspectOptions(inspectOptions: InspectOptions) {
 		this.nextInspectOptions = inspectOptions;
+	}
+
+	updateNextInspectOptions(inspectOptions: InspectOptions) {
+		if (this.nextInspectOptions !== undefined)
+			Object.assign(this.nextInspectOptions, inspectOptions);
+		else
+			this.nextInspectOptions = Object.assign(Object.assign({}, this.inspectOptions), inspectOptions);
 	}
 
 	debug(...msg: any[]): void {
@@ -67,7 +78,7 @@ export class Log {
 		this.targets = [];
 	}
 
-	private log(logLevel: string, ...msg: any[]) {
+	private log(logLevel: string, msg: any[]) {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
 
@@ -75,26 +86,24 @@ export class Log {
 				? this.nextInspectOptions
 				: this.inspectOptions;
 
-			let msgWithInspection = '';
 			let isPreviousNotString = false;
 
 			for (let i = 0; i < msg.length; ++i) {
-				if (typeof msg[i] === 'string') {
-					msgWithInspection += msg[i];
-					isPreviousNotString = false;
-				} else {
-					if (isPreviousNotString) msgWithInspection += '; ';
-					try {
-						msgWithInspection += util.inspect(msg[i], inspectOptions);
-					} catch (e) {
-						msgWithInspection += '<inspection error>';
+				try {
+					if (typeof msg[i] !== 'string') {
+						msg[i] = util.inspect(msg[i], inspectOptions)
+							+ (isPreviousNotString ? ';' : '');
+						isPreviousNotString = true;
+					} else {
+						isPreviousNotString = false;
 					}
-					isPreviousNotString = true;
+				} catch (e) {
+					msg[i] = '<inspection error>';
 				}
 			}
 
-			const final = `[${dateString}] [${logLevel}] ${msgWithInspection}`;
-			this.targets.forEach(target => target.write(final));
+			const logEntry = `[${dateString}] [${logLevel}] ` + msg.join(' ');
+			this.targets.forEach(target => target.write(logEntry));
 		}
 		this.nextInspectOptions = undefined;
 	}
