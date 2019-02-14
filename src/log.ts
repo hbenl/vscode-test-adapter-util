@@ -166,8 +166,7 @@ export class FileTarget implements ILogTarget {
 	}
 
 	write(msg: string): void {
-		this.writeStream.write(msg);
-		this.writeStream.write('\n');
+		this.writeStream.write(msg + '\n');
 	}
 
 	dispose(): void {
