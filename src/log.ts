@@ -155,7 +155,6 @@ export class OutputChannelTarget implements ILogTarget {
 
 export class FileTarget implements ILogTarget {
 
-	private readonly buffered: string[] = [];
 	private readonly writeStream: fs.WriteStream;
 
 	constructor(filename: string) {
@@ -166,8 +165,7 @@ export class FileTarget implements ILogTarget {
 	}
 
 	write(msg: string): void {
-		this.writeStream.write(msg);
-		this.writeStream.write('\n');
+		this.writeStream.write(msg + '\n');
 	}
 
 	dispose(): void {
