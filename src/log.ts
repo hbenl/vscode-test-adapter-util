@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import * as util from 'util';
 
@@ -16,12 +17,14 @@ export class Log {
 	 * @param configSection - the prefix for the configuration variables: logging to the output channel will be enabled if <configSection>.logpanel is set to true, logging to a file will be enabled if <configSection>.logfile is set to a filename
 	 * @param workspaceFolder - the WorkspaceFolder (optional)
 	 * @param outputChannelName - the name of the output channel
+	 * @param includeLocation - if true it will try to include the location info of the caller
 	 */
 	constructor(
 		private readonly configSection: string,
 		private readonly workspaceFolder: vscode.WorkspaceFolder | undefined,
 		private readonly outputChannelName: string,
-		private inspectOptions: InspectOptions = {}
+		private inspectOptions: InspectOptions = {},
+		private readonly includeLocation: boolean = false,
 	) {
 		this.configure();
 		this.configChangeSubscription = vscode.workspace.onDidChangeConfiguration(event => {
@@ -82,6 +85,14 @@ export class Log {
 		if (this.targets.length > 0) {
 			const dateString = new Date().toISOString().replace('T', ' ').replace('Z', '');
 
+			let prefix = `[${dateString}] [${logLevel}] `;
+
+            if (this.includeLocation) {
+				const loc = this.getCallerLocation();
+				if (loc)
+					prefix += `[${loc}] `;
+            }
+
 			const inspectOptions = this.nextInspectOptions !== undefined
 				? this.nextInspectOptions
 				: this.inspectOptions;
@@ -102,10 +113,39 @@ export class Log {
 				}
 			}
 
-			const logEntry = `[${dateString}] [${logLevel}] ` + msg.join(' ');
+			const logEntry = prefix + msg.join(' ');
 			this.targets.forEach(target => target.write(logEntry));
 		}
 		this.nextInspectOptions = undefined;
+	}
+
+	private getCallerLocation() {
+		try {
+			const err = Error();
+			
+			// stack: 'This feature is non-standard and is not on a standards track.'
+			if (!err.stack || typeof err.stack !== 'string') return undefined;
+			
+			let lastCurrentFile = err.stack.lastIndexOf(__filename);
+			if (lastCurrentFile === -1) {
+				lastCurrentFile = err.stack.lastIndexOf(path.basename(__filename));
+				
+				if (lastCurrentFile === -1) return undefined;
+			}
+
+			const newLine = err.stack.indexOf('\n', lastCurrentFile);
+
+			if (newLine === -1) return undefined;
+
+			let nextNewLine = err.stack.indexOf('\n', newLine + 1);
+			
+			if (nextNewLine === -1) nextNewLine = err.stack.length;
+
+			return err.stack.substring(newLine + 1, nextNewLine).trim();
+		}
+		catch (e) {
+			return undefined;
+		}
 	}
 
 	private configure() {
