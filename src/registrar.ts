@@ -40,6 +40,10 @@ export class TestAdapterRegistrar<T extends TestAdapter & { dispose: () => void 
 		});
 	}
 
+	public getAdapter(workspaceFolder: vscode.WorkspaceFolder): T | undefined {
+		return this.registeredAdapters.get(workspaceFolder);
+	}
+
 	private add(workspaceFolder: vscode.WorkspaceFolder) {
 
 		if (workspaceFolder.uri.scheme !== 'file') {
