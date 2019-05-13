@@ -87,11 +87,11 @@ export class Log {
 
 			let prefix = `[${dateString}] [${logLevel}] `;
 
-            if (this.includeLocation) {
+			if (this.includeLocation) {
 				const loc = this.getCallerLocation();
 				if (loc)
 					prefix += `[${loc}] `;
-            }
+			}
 
 			const inspectOptions = this.nextInspectOptions !== undefined
 				? this.nextInspectOptions
@@ -122,14 +122,14 @@ export class Log {
 	private getCallerLocation() {
 		try {
 			const err = Error();
-			
+
 			// stack: 'This feature is non-standard and is not on a standards track.'
 			if (!err.stack || typeof err.stack !== 'string') return undefined;
-			
+
 			let lastCurrentFile = err.stack.lastIndexOf(__filename);
 			if (lastCurrentFile === -1) {
 				lastCurrentFile = err.stack.lastIndexOf(path.basename(__filename));
-				
+
 				if (lastCurrentFile === -1) return undefined;
 			}
 
@@ -138,7 +138,7 @@ export class Log {
 			if (newLine === -1) return undefined;
 
 			let nextNewLine = err.stack.indexOf('\n', newLine + 1);
-			
+
 			if (nextNewLine === -1) nextNewLine = err.stack.length;
 
 			return err.stack.substring(newLine + 1, nextNewLine).trim();
@@ -169,11 +169,20 @@ export class Log {
 			}
 		}
 	}
+	get outputChannel(): vscode.OutputChannel | undefined {
+		const uri = this.workspaceFolder ? this.workspaceFolder.uri : null
+		const configuration = vscode.workspace.getConfiguration(this.configSection, uri)
+		if (this.targets[0] instanceof OutputChannelTarget && configuration.get<boolean>('logpanel')) {
+			return this.targets[0].target as vscode.OutputChannel;
+		}
+		return undefined;
+	}
 }
 
 interface ILogTarget {
 	write(msg: string): void;
 	dispose(): void;
+	target: vscode.OutputChannel | fs.WriteStream;
 }
 
 export class OutputChannelTarget implements ILogTarget {
@@ -190,6 +199,9 @@ export class OutputChannelTarget implements ILogTarget {
 
 	dispose(): void {
 		this.outputChannel.dispose();
+	}
+	get target(): vscode.OutputChannel {
+		return this.outputChannel
 	}
 }
 
@@ -210,6 +222,9 @@ export class FileTarget implements ILogTarget {
 
 	dispose(): void {
 		this.writeStream.end();
+	}
+	get target(): fs.WriteStream {
+		return this.writeStream;
 	}
 }
 
