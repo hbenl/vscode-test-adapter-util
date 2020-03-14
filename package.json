@@ -9,7 +9,6 @@
     "url": "https://github.com/hbenl/vscode-test-adapter-util.git"
   },
   "scripts": {
-    "install-vscode-typings": "node ./node_modules/vscode/bin/install",
     "compile": "tsc"
   },
   "files": [
@@ -23,12 +22,12 @@
     "vscode": "^1.24.0"
   },
   "dependencies": {
-    "tslib": "^1.9.3",
-    "vscode-test-adapter-api": "^1.7.0"
+    "tslib": "^1.11.1",
+    "vscode-test-adapter-api": "^1.8.0"
   },
   "devDependencies": {
-    "@types/node": "^8.10.45",
-    "typescript": "^3.4.4",
-    "vscode": "^1.1.33"
+    "@types/node": "^8.10.59",
+    "@types/vscode": "1.24.0",
+    "typescript": "^3.8.3"
   }
 }
